@@ -1,35 +1,10 @@
-import { test, expect, Page } from '@playwright/test';
-
-// ✅ Utility: Reusable navigation to email login
-async function navigateToEmailLogin(page: Page) {
-  await page.goto('https://gowish.com/en');
-  await expect(page).toHaveTitle(/GoWish/);
-  await expect(page.getByRole('heading', { name: 'All your wishes in one place' })).toBeVisible();
-
-  const declineButton = page.getByRole('button', { name: 'Decline all' });
-  if (await declineButton.isVisible({ timeout: 5000 })) {
-    await declineButton.click();
-    await expect(declineButton).toHaveCount(0);
-  }
-
-  await page.getByRole('button', { name: 'Log in' }).click();
-  await page.getByText('Continue with e-mail', { exact: true }).click();
-}
-
-// ✅ Utility: Full login flow
-async function login(page: Page, email: string, password: string) {
-  await navigateToEmailLogin(page);
-  await page.getByPlaceholder('Email').fill(email);
-  await page.getByPlaceholder('Password').fill(password);
-  await page.getByRole('dialog').getByRole('button', { name: 'LOG IN' }).click();
-  await page.waitForURL('**/overview');
-  await expect(page.getByText('Muhammad Usman')).toBeVisible();
-}
+import { test, goToEmailLoginPage } from './fixtures';
+import { expect } from '@playwright/test';
 
 test.describe('GoWish.com E2E Scenarios', () => {
 
-  test('E2E: Add Philips Trimmer Multi to My Wishlist and archive it', async ({ page }) => {
-    await login(page, 'usman.dk11@yahoo.com', 'Denmark123@');
+  test('E2E: Add Philips Trimmer Multi to My Wishlist and archive it', async ({ page, loginAsUser }) => {
+    await loginAsUser();
 
     // Step 1: Go to Matas brand
     const viewAllBrands = page.locator('text=Brands').locator('xpath=following::button[contains(., "View all")][1]');
@@ -76,12 +51,11 @@ test.describe('GoWish.com E2E Scenarios', () => {
     const archiveOption = page.getByText('Archive wishlist', { exact: true });
     await expect(archiveOption).toBeVisible();
     await archiveOption.click({ force: true });
-    // Step 4: Confirm archive action
+
     const confirmArchiveBtn = page.getByRole('button', { name: 'Archive' });
     await expect(confirmArchiveBtn).toBeVisible();
     await confirmArchiveBtn.click();
 
-    // Then verify success toast
     const archiveToast = page.locator('text=Wishlist archived successfully');
     await expect(archiveToast).toBeVisible({ timeout: 10000 });
     await archiveToast.waitFor({ state: 'detached', timeout: 10000 });
@@ -93,7 +67,7 @@ test.describe('GoWish.com E2E Scenarios', () => {
   });
 
   test('Invalid email login shows error popup and dismisses', async ({ page }) => {
-    await navigateToEmailLogin(page);
+    await goToEmailLoginPage(page);
     await page.getByPlaceholder('Email').fill('invalid.email@test.com');
     await page.getByPlaceholder('Password').fill('WrongPassword123');
     await page.getByRole('dialog').getByRole('button', { name: 'LOG IN' }).click();
@@ -106,7 +80,7 @@ test.describe('GoWish.com E2E Scenarios', () => {
   });
 
   test('Login with valid email and wrong password shows error', async ({ page }) => {
-    await navigateToEmailLogin(page);
+    await goToEmailLoginPage(page);
     await page.getByPlaceholder('Email').fill('usman.dk11@yahoo.com');
     await page.getByPlaceholder('Password').fill('WrongPassword123');
     await page.getByRole('dialog').getByRole('button', { name: 'LOG IN' }).click();
@@ -117,7 +91,7 @@ test.describe('GoWish.com E2E Scenarios', () => {
   });
 
   test('Empty credentials then fill step by step', async ({ page }) => {
-    await navigateToEmailLogin(page);
+    await goToEmailLoginPage(page);
     await page.getByRole('dialog').getByRole('button', { name: 'LOG IN' }).click();
     await expect(page.getByText('Please enter a valid password')).toBeVisible();
 
@@ -135,7 +109,7 @@ test.describe('GoWish.com E2E Scenarios', () => {
   });
 
   test('Forgot password flow with confirmation modal', async ({ page }) => {
-    await navigateToEmailLogin(page);
+    await goToEmailLoginPage(page);
 
     const forgotBtn = page.getByText('Forgot password?', { exact: true });
     await expect(forgotBtn).toBeVisible();
