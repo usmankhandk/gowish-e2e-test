@@ -12,18 +12,18 @@ This repository contains end-to-end (E2E) tests for GoWish.com using Playwright.
 ## 🚀 How to Run Locally
 
 1. Clone the repository:
-git clone https://github.com/usmankhandk/gowish-e2e-test.git
-cd gowish-e2e-test
+- git clone https://github.com/usmankhandk/gowish-e2e-test.git
+- cd gowish-e2e-test
 
 2. Install dependencies:
-npm install
-npx playwright install
+- npm install
+- npx playwright install
 
 3. Run tests:
-npx playwright test
+- npx playwright test
 
 4. View HTML test report:
-npx playwright show-report
+- npx playwright show-report
 
 ## 🧪 CI/CD
 
