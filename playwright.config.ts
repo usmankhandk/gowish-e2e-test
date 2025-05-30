@@ -14,7 +14,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // ✅ Custom workers count
-  workers: process.env.CI ? 1 : 4, //  4 locally, 1 on CI
+  workers: process.env.CI ? 5 : 5, //  5 locally, 5 on CI
 
   // ✅ Reporter to generate HTML test results
   reporter: 'html',
